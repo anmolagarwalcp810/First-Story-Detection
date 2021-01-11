@@ -55,8 +55,9 @@ while file:
                  int(time_string2[2]))
 
     # need to limit number of documents in timeseries (either to top 2000, or to last 10 days)
-    if (timeStamp - time_series[0][1]).days > 10:
-        time_series.pop(0)
+    if len(time_series)>0:
+        if (timeStamp - time_series[0][1]).days > 10:
+            time_series.pop(0)
 
     # newest document at the end of the list
     time_series.append((docID, timeStamp))
@@ -89,10 +90,10 @@ while file:
 
     # now make document vectors
     # given top n specific terms from which to retrieve this document's vector
-    DocumentVectors[docID] = np.array()
+    DocumentVectors[docID] = np.array([])
 
     for k in DocumentVectors:
-        docArray = [0 for j in range(len(top_terms))]
+        docArray = [0 for j in range(max(len(top_terms),N))]
         j = 0
         for i in top_terms:
             temp = inverted_index[i[0]]
@@ -185,7 +186,7 @@ while file:
                 nearestNeighbour = k[0]
                 minDistance = tempDistance
 
-        if minDistance<=t:
+        if minDistance <= t:
             for i in Threads:
                 if nearestNeighbour in i:
                     i.add(docID)
