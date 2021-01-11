@@ -2,6 +2,7 @@ from datetime import datetime
 from pygtrie import CharTrie
 import numpy as np
 from scipy import spatial
+import math
 
 file = open("D:/IIT Delhi/Semester 5/COL764/Project/Datasets/cleanTweets_25_500000.txt",'r')
 
@@ -11,8 +12,10 @@ IDF : log(D/df)
 '''
 
 mu, sigma = 0, 1
-L = 10
-k = 10
+# loss probability = 2.5% or 0.025
+delta = 0.025
+K = 2
+L = int(math.log(delta, 1 - 0.5**K))
 
 # N is top terms based on IDF score
 N = 300
@@ -25,7 +28,10 @@ t = 0.2
 # or of time stamp, newest document appended at the end of the list
 
 hash_table_array = [CharTrie() for i in range(L)]
-hyperplanes = [np.random.normal(mu, sigma, N) for i in range(L)]
+# L*k
+hyperplanes = [[np.random.normal(mu, sigma, N) for i in range(K)] for j in range(L)]
+
+# print(hyperplanes)
 
 inverted_index = CharTrie()
 DocumentVectors = CharTrie()
@@ -109,13 +115,13 @@ while file:
     S = CharTrie()
     for i in range(L):
         string = ''
-        # use document vector instead
-        arr = DocumentVectors[docID]
-        # arr = np.array([random.random() for j in range(N)])
-        if np.dot(hyperplanes[i], arr) < 0:
-            string += '0'
-        else:
-            string += '1'
+        # generate k bit string
+        for j in range(K):
+            arr = DocumentVectors[docID]
+            if np.dot(hyperplanes[i][j], arr) < 0:
+                string += '0'
+            else:
+                string += '1'
         hash_table = hash_table_array[i]
         if hash_table.has_key(string):
             for k in hash_table[string]:
