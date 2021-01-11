@@ -166,7 +166,7 @@ while file:
 
     if minDistance > t:
         # apply variance reduction
-        for k in time_series:
+        for k in time_series[:len(time_series)-1]:
             if not DocumentVectors.has_node(k[0]):
                 docArray = [0 for j in range(len(top_terms))]
                 j = 0
@@ -187,6 +187,9 @@ while file:
                 minDistance = tempDistance
 
         if minDistance <= t:
+            if nearestNeighbour is None:
+                Threads.append({docID})
+                FirstStory.append((docID, timeStamp))
             for i in Threads:
                 if nearestNeighbour in i:
                     i.add(docID)
@@ -198,10 +201,15 @@ while file:
 
     else:
         # add it to thread
-        for i in Threads:
-            if nearestNeighbour in i:
-                i.add(docID)
-                break
+        if nearestNeighbour is None:
+            Threads.append({docID})
+            FirstStory.append((docID, timeStamp))
+        else:
+            for i in Threads:
+                if nearestNeighbour in i:
+                    i.add(docID)
+                    break
+
 
 # print Threads
 for i in Threads:
