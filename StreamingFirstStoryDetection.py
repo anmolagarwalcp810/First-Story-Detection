@@ -3,6 +3,8 @@ from pygtrie import CharTrie
 import numpy as np
 from scipy import spatial
 import math
+import time
+import matplotlib.pyplot as plt
 
 file = open("D:/IIT Delhi/Semester 5/COL764/Project/Datasets/cleanTweets_25_500000.txt",'r')
 
@@ -18,7 +20,7 @@ K = 5
 L = int(math.log(delta, 1 - 0.5**K))
 
 # N is top terms based on IDF score
-N = 10000
+N = 500
 
 # threshold
 t = 0.2
@@ -49,12 +51,19 @@ Threads = []
 FirstStory = []
 
 count = 0
+curTime = time.time()
+x_values = []
+y_values = []
 while file:
     line = file.readline()
-    if line is None or count>1000:
+    if line is None or count>500:
         break
     if count%50==0:
         print(count)
+        x_values.append(count)
+        y_values.append(time.time()-curTime)
+        curTime = time.time()
+
     line = line.split(',')
     docID = line[-1].rstrip(' \r\n').lstrip(' ')
     time_string = line[2].split()
@@ -219,3 +228,14 @@ for i in FirstStory:
     print(i, end=", ")
 
 file.close()
+
+fig = plt.figure()
+ax = fig.gca()
+plt.title("Time take to process every 50 tweets")
+ax.set_xlabel("Tweet Number")
+ax.set_ylabel("Time Taken")
+ax.plot(x_values,y_values,color='green')
+# ax.legend()
+fig.canvas.draw()
+plt.savefig('Plot_Streaming')
+plt.show()
