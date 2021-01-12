@@ -5,8 +5,9 @@ from scipy import spatial
 import math
 import time
 import matplotlib.pyplot as plt
+# from nltk import PorterStemmer
 
-file = open("D:/IIT Delhi/Semester 5/COL764/Project/Datasets/cleanTweets_25_500000.txt", 'r')
+file = open("preprocessedTweets.txt", 'r')
 
 '''
 TF : 1+log(tf)
@@ -23,7 +24,7 @@ L = int(math.log(delta, 1 - 0.5 ** K))
 N = 10000
 
 # threshold
-t = 0.2
+t = 0.8
 
 # array of hash tables (Tries)
 # hashtable bucket contains list of documents sorted based on timestamps, stored as (Doc, timestamp), sorted in increasing
@@ -41,11 +42,12 @@ DocumentVectors = CharTrie()
 # First initialize inverted index
 count = 0
 top_terms = []
+# stemmer = PorterStemmer()
 while file:
     line = file.readline()
-    if line is None or count > 1000:
+    if line == '' or count > 1000:
         break
-    if count % 50 == 0:
+    if count % 100 == 0:
         print(count)
     if count == 0: print(line)
     line = line.split(',')
@@ -56,6 +58,9 @@ while file:
     #                      int(time_string2[2]))
     terms = file.readline().split()
     for i in terms:
+        # if '#' in j or j.startswith('http') or '@' in j:
+        #     continue
+        # i = stemmer.stem(j)
         if inverted_index.has_node(i) == 1:
             temp = inverted_index[i]
             dictionary = temp[2]

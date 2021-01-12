@@ -6,7 +6,7 @@ import math
 import time
 import matplotlib.pyplot as plt
 
-file = open("D:/IIT Delhi/Semester 5/COL764/Project/Datasets/cleanTweets_25_500000.txt",'r')
+file = open("preprocessedTweets.txt",'r')
 
 '''
 TF : 1+log(tf)
@@ -20,7 +20,7 @@ K = 5
 L = int(math.log(delta, 1 - 0.5**K))
 
 # N is top terms based on IDF score
-N = 500
+N = 300
 
 # threshold
 t = 0.2
@@ -56,7 +56,7 @@ x_values = []
 y_values = []
 while file:
     line = file.readline()
-    if line is None or count>500:
+    if line == '' or count>1000:
         break
     if count%50==0:
         print(count)
