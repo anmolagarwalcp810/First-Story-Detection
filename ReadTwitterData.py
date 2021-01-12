@@ -14,7 +14,7 @@ IDF : log(D/df)
 mu, sigma = 0, 1
 # loss probability = 2.5% or 0.025
 delta = 0.025
-K = 2
+K = 5
 L = int(math.log(delta, 1 - 0.5**K))
 
 # N is top terms based on IDF score
@@ -51,8 +51,10 @@ FirstStory = []
 count = 0
 while file:
     line = file.readline()
-    if line is None or count>100:
+    if line is None or count>1000:
         break
+    if count%50==0:
+        print(count)
     line = line.split(',')
     docID = line[-1].rstrip(' \r\n').lstrip(' ')
     time_string = line[2].split()
@@ -96,21 +98,18 @@ while file:
 
     # now make document vectors
     # given top n specific terms from which to retrieve this document's vector
-    DocumentVectors[docID] = np.array([])
+    DocumentVectors[docID] = np.array([0 for j in range(N)])
 
+    # update all the document vectors currently present
     for k in DocumentVectors:
-        docArray = [0 for j in range(max(len(top_terms),N))]
+        docArray = DocumentVectors[k]
         j = 0
         for i in top_terms:
             temp = inverted_index[i[0]]
             temp = temp[2]
-            # print(temp)
-            # print(temp.has_node(k))
             if temp.has_node(k):
                 docArray[j] = (1 + np.log(temp[k]))*i[1]
             j += 1
-        docVec = np.array(docArray)
-        DocumentVectors[k] = docVec.copy()
 
     S = CharTrie()
     for i in range(L):
@@ -150,18 +149,15 @@ while file:
     nearestNeighbour = None
     for i in top_elements:
         if not DocumentVectors.has_node(i[0]):
-            docArray = [0 for j in range(len(top_terms))]
+            DocumentVectors[i[0]] = np.array([0 for j in range(N)])
+            docArray = DocumentVectors[i[0]]
             j = 0
             for k in top_terms:
                 temp = inverted_index[i[0]]
                 temp = temp[2]
-                # print(temp)
-                # print(temp.has_node(k))
                 if temp.has_node(i[0]):
                     docArray[j] = (1 + np.log(temp[i[0]])) * k[1]
                 j += 1
-            docVec = np.array(docArray)
-            DocumentVectors[i[0]] = docVec.copy()
 
         tempVec = DocumentVectors[i[0]]
         # need to decide between np.
@@ -174,19 +170,16 @@ while file:
         # apply variance reduction
         for k in time_series[:len(time_series)-1]:
             if not DocumentVectors.has_node(k[0]):
-                docArray = [0 for j in range(len(top_terms))]
+                DocumentVectors[k[0]] = np.array([0 for j in range(len(top_terms))])
+                docArray = DocumentVectors[k[0]]
                 j = 0
                 for i in top_terms:
                     temp = inverted_index[i[0]]
                     temp = temp[2]
-                    # print(temp)
-                    # print(temp.has_node(k[0]))
                     if temp.has_node(k[0]):
                         docArray[j] = (1 + np.log(temp[k[0]])) * i[1]
                     j += 1
 
-                docVec = np.array(docArray)
-                DocumentVectors[k[0]] = docVec.copy()
             tempDistance = spatial.distance.cosine(DocumentVectors[docID], DocumentVectors[k[0]])
             if tempDistance < minDistance:
                 nearestNeighbour = k[0]
